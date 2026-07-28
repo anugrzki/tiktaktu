@@ -252,26 +252,11 @@
 
   <!-- KOTAK LOGO KIRI ATAS (5 LOGO) -->
   <div class="logo-corner">
-    <!-- Logo 1 -->
-    <div class="logo-box">
-      <img src="l1.jpeg" alt="Logo Game 1">
-    </div>
-    <!-- Logo 2 -->
-    <div class="logo-box">
-      <img src="l2.jpeg" alt="Logo Game 2">
-    </div>
-    <!-- Logo 3 -->
-    <div class="logo-box">
-      <img src="l3.jpeg" alt="Logo Game 3">
-    </div>
-    <!-- Logo 4 -->
-    <div class="logo-box">
-      <img src="l4.jpeg" alt="Logo Game 4">
-    </div>
-    <!-- Logo 5 -->
-    <div class="logo-box">
-      <img src="l5.jpeg" alt="Logo Game 5">
-    </div>
+    <div class="logo-box"><img src="l1.jpeg" alt="Logo Game 1"></div>
+    <div class="logo-box"><img src="l2.jpeg" alt="Logo Game 2"></div>
+    <div class="logo-box"><img src="l3.jpeg" alt="Logo Game 3"></div>
+    <div class="logo-box"><img src="l4.jpeg" alt="Logo Game 4"></div>
+    <div class="logo-box"><img src="l5.jpeg" alt="Logo Game 5"></div>
     <span class="brand-name">XOX Game</span>
   </div>
 
@@ -279,7 +264,6 @@
 
   <!-- 5 KOTAK BERADA DI TENGAH -->
   <div class="five-boxes-container">
-    <!-- Kotak 1: Pilih Level -->
     <div class="center-box">
       <span>Level</span>
       <select id="levelSelect">
@@ -289,25 +273,21 @@
       </select>
     </div>
 
-    <!-- Kotak 2: Skor Kamu -->
     <div class="center-box">
       <span>Kamu (X)</span>
       <strong id="playerScore">0</strong>
     </div>
 
-    <!-- Kotak 3: Skor Seri -->
     <div class="center-box">
       <span>Seri</span>
       <strong id="drawScore">0</strong>
     </div>
 
-    <!-- Kotak 4: Skor Bot -->
     <div class="center-box">
       <span>Bot (O)</span>
       <strong id="aiScore">0</strong>
     </div>
 
-    <!-- Kotak 5: Tombol Reset Ronde -->
     <div class="center-box">
       <span>Ronde</span>
       <button class="btn-box-action" id="resetBtn">Baru</button>
@@ -336,6 +316,86 @@
   </div>
 
   <script>
+    // Audio Context untuk efek suara sintetis
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'moveX') {
+        // Suara klik Pemain X (NADA TINGGI SUASANA CERAH)
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.1); // A5
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === 'moveO') {
+        // Suara klik Bot O (NADA RENDAH BASS)
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(150, now + 0.12);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === 'win') {
+        // Efek Menang (FANFARE SEGERA)
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const oscW = audioCtx.createOscillator();
+          const gainW = audioCtx.createGain();
+          oscW.connect(gainW);
+          gainW.connect(audioCtx.destination);
+
+          oscW.type = 'triangle';
+          oscW.frequency.value = freq;
+          const start = now + (idx * 0.08);
+          gainW.gain.setValueAtTime(0.3, start);
+          gainW.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+          oscW.start(start);
+          oscW.stop(start + 0.25);
+        });
+      } else if (type === 'lose') {
+        // Efek Kalah (NADA TURUN / BASS SAD)
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.4);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      } else if (type === 'draw') {
+        // Efek Seri
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.setValueAtTime(400, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'reset') {
+        // Efek Tombol Reset
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      }
+    }
+
     // State Permainan
     let boardState = ['', '', '', '', '', '', '', '', ''];
     let humanPlayer = 'X';
@@ -369,8 +429,8 @@
     // Event Listeners
     cells.forEach(cell => cell.addEventListener('click', handleCellClick));
     levelSelect.addEventListener('change', handleLevelChange);
-    resetBtn.addEventListener('click', resetBoard);
-    clearScoreBtn.addEventListener('click', resetAllScore);
+    resetBtn.addEventListener('click', () => { playSound('reset'); resetBoard(); });
+    clearScoreBtn.addEventListener('click', () => { playSound('reset'); resetAllScore(); });
 
     function handleCellClick(e) {
       const index = e.target.getAttribute('data-index');
@@ -379,6 +439,7 @@
         return;
       }
 
+      playSound('moveX');
       makeMove(index, humanPlayer);
 
       if (checkGameState(humanPlayer)) return;
@@ -390,6 +451,7 @@
       setTimeout(() => {
         if (isGameActive) {
           const aiMove = getAiMove();
+          playSound('moveO');
           makeMove(aiMove, aiPlayer);
           if (!checkGameState(aiPlayer)) {
             currentPlayer = humanPlayer;
@@ -425,9 +487,11 @@
         if (player === humanPlayer) {
           statusText.textContent = "Selamat! Kamu Menang! 🎉";
           scores.player++;
+          playSound('win');
         } else {
           statusText.textContent = "Bot Menang! 🤖";
           scores.ai++;
+          playSound('lose');
         }
         updateScoreboard();
         return true;
@@ -438,6 +502,7 @@
         isGameActive = false;
         statusText.textContent = "Hasil Seri! 🤝";
         scores.draw++;
+        playSound('draw');
         updateScoreboard();
         return true;
       }
@@ -558,6 +623,7 @@
 
     function handleLevelChange(e) {
       level = e.target.value;
+      playSound('reset');
       resetBoard();
     }
 

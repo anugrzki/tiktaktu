@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game XOX dengan Level & Skor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2.2rem;
+      color: #38bdf8;
+    }
+
+    .control-panel {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background-color: #1e293b;
+      color: #f8fafc;
+      font-size: 1rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Papan Skor */
+    .scoreboard {
+      display: flex;
+      gap: 20px;
+      background-color: #1e293b;
+      padding: 12px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      margin-bottom: 20px;
+    }
+
+    .score-item {
+      text-align: center;
+    }
+
+    .score-item span {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .score-item strong {
+      font-size: 1.5rem;
+      color: #38bdf8;
+    }
+
+    .status {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      height: 30px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    /* Board Tic Tac Toe */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+      background-color: #334155;
+      padding: 10px;
+      border-radius: 16px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+
+    .cell {
+      background-color: #1e293b;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .cell:hover {
+      background-color: #334155;
+    }
+
+    .cell.x {
+      color: #38bdf8; /* Biru untuk Pemain X */
+    }
+
+    .cell.o {
+      color: #f43f5e; /* Merah untuk Bot O */
+    }
+
+    .cell.winning {
+      background-color: #059669; /* Hijau saat menang */
+      color: #ffffff;
+    }
+
+    /* Tombol Reset */
+    .actions {
+      margin-top: 25px;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-reset {
+      background-color: #38bdf8;
+      color: #0f172a;
+    }
+
+    .btn-clear-score {
+      background-color: #475569;
+      color: #f8fafc;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Game XOX</h1>
+
+  <!-- Pengaturan Level -->
+  <div class="control-panel">
+    <label for="levelSelect">Pilih Level:</label>
+    <select id="levelSelect">
+      <option value="easy">Level 1: Mudah (Easy)</option>
+      <option value="medium">Level 2: Sedang (Medium)</option>
+      <option value="hard">Level 3: Sulit (Unbeatable)</option>
+    </select>
+  </div>
+
+  <!-- Papan Skor -->
+  <div class="scoreboard">
+    <div class="score-item">
+      <span>Kamu (X)</span>
+      <strong id="playerScore">0</strong>
+    </div>
+    <div class="score-item">
+      <span>Seri</span>
+      <strong id="drawScore">0</strong>
+    </div>
+    <div class="score-item">
+      <span>Bot (O)</span>
+      <strong id="aiScore">0</strong>
+    </div>
+  </div>
+
+  <!-- Status Permainan -->
+  <div class="status" id="statusText">Giliran Kamu (X)</div>
+
+  <!-- Papan Permainan -->
+  <div class="board" id="board">
+    <div class="cell" data-index="0"></div>
+    <div class="cell" data-index="1"></div>
+    <div class="cell" data-index="2"></div>
+    <div class="cell" data-index="3"></div>
+    <div class="cell" data-index="4"></div>
+    <div class="cell" data-index="5"></div>
+    <div class="cell" data-index="6"></div>
+    <div class="cell" data-index="7"></div>
+    <div class="cell" data-index="8"></div>
+  </div>
+
+  <!-- Aksi -->
+  <div class="actions">
+    <button class="btn-reset" id="resetBtn">Ronde Baru</button>
+    <button class="btn-clear-score" id="clearScoreBtn">Reset Skor</button>
+  </div>
+
+  <script>
+    // State Permainan
+    let boardState = ['', '', '', '', '', '', '', '', ''];
+    let humanPlayer = 'X';
+    let aiPlayer = 'O';
+    let currentPlayer = humanPlayer;
+    let isGameActive = true;
+    let level = 'easy';
+
+    let scores = {
+      player: 0,
+      draw: 0,
+      ai: 0
+    };
+
+    const winningConditions = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Baris
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Kolom
+      [0, 4, 8], [2, 4, 6]             // Diagonal
+    ];
+
+    // Elemen DOM
+    const cells = document.querySelectorAll('.cell');
+    const statusText = document.getElementById('statusText');
+    const levelSelect = document.getElementById('levelSelect');
+    const resetBtn = document.getElementById('resetBtn');
+    const clearScoreBtn = document.getElementById('clearScoreBtn');
+    const playerScoreEl = document.getElementById('playerScore');
+    const drawScoreEl = document.getElementById('drawScore');
+    const aiScoreEl = document.getElementById('aiScore');
+
+    // Event Listeners
+    cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+    levelSelect.addEventListener('change', handleLevelChange);
+    resetBtn.addEventListener('click', resetBoard);
+    clearScoreBtn.addEventListener('click', resetAllScore);
+
+    // fungsi klik kotak oleh pemain
+    function handleCellClick(e) {
+      const index = e.target.getAttribute('data-index');
+
+      if (boardState[index] !== '' || !isGameActive || currentPlayer !== humanPlayer) {
+        return;
+      }
+
+      makeMove(index, humanPlayer);
+
+      if (checkGameState(humanPlayer)) return;
+
+      // Giliran Bot
+      currentPlayer = aiPlayer;
+      statusText.textContent = "Bot (O) sedang berpikir...";
+
+      setTimeout(() => {
+        if (isGameActive) {
+          const aiMove = getAiMove();
+          makeMove(aiMove, aiPlayer);
+          if (!checkGameState(aiPlayer)) {
+            currentPlayer = humanPlayer;
+            statusText.textContent = "Giliran Kamu (X)";
+          }
+        }
+      }, 400);
+    }
+
+    function makeMove(index, player) {
+      boardState[index] = player;
+      const cell = cells[index];
+      cell.textContent = player;
+      cell.classList.add(player.toLowerCase());
+    }
+
+    function checkGameState(player) {
+      let roundWon = false;
+      let winningCombo = null;
+
+      for (let condition of winningConditions) {
+        const [a, b, c] = condition;
+        if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+          roundWon = true;
+          winningCombo = condition;
+          break;
+        }
+      }
+
+      if (roundWon) {
+        isGameActive = false;
+        highlightWinningCells(winningCombo);
+        if (player === humanPlayer) {
+          statusText.textContent = "Selamat! Kamu Menang! 🎉";
+          scores.player++;
+        } else {
+          statusText.textContent = "Bot Menang! 🤖";
+          scores.ai++;
+        }
+        updateScoreboard();
+        return true;
+      }
+
+      // Cek Seri
+      if (!boardState.includes('')) {
+        isGameActive = false;
+        statusText.textContent = "Hasil Seri! 🤝";
+        scores.draw++;
+        updateScoreboard();
+        return true;
+      }
+
+      return false;
+    }
+
+    function highlightWinningCells(combo) {
+      combo.forEach(idx => cells[idx].classList.add('winning'));
+    }
+
+    function updateScoreboard() {
+      playerScoreEl.textContent = scores.player;
+      drawScoreEl.textContent = scores.draw;
+      aiScoreEl.textContent = scores.ai;
+    }
+
+    // --- LOGIKA BOT BERDASARKAN LEVEL ---
+    function getAiMove() {
+      const emptyIndices = getEmptyIndices(boardState);
+
+      if (level === 'easy') {
+        // Acak total
+        return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      } 
+      
+      if (level === 'medium') {
+        // 1. Cek apakah Bot bisa menang
+        for (let idx of emptyIndices) {
+          let tempBoard = [...boardState];
+          tempBoard[idx] = aiPlayer;
+          if (isWinner(tempBoard, aiPlayer)) return idx;
+        }
+        // 2. Cek apakah harus menghalangi Pemain
+        for (let idx of emptyIndices) {
+          let tempBoard = [...boardState];
+          tempBoard[idx] = humanPlayer;
+          if (isWinner(tempBoard, humanPlayer)) return idx;
+        }
+        // 3. Jika tidak, ambil acak
+        return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      } 
+      
+      if (level === 'hard') {
+        // Gunakan Minimax Algorithm (Tak Terkalahkan)
+        return minimax(boardState, aiPlayer).index;
+      }
+    }
+
+    function getEmptyIndices(state) {
+      return state.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
+    }
+
+    function isWinner(state, player) {
+      return winningConditions.some(cond => {
+        return cond.every(idx => state[idx] === player);
+      });
+    }
+
+    // Algoritma Minimax untuk Level Hard
+    function minimax(newBoard, player) {
+      const availSpots = getEmptyIndices(newBoard);
+
+      if (isWinner(newBoard, humanPlayer)) {
+        return { score: -10 };
+      } else if (isWinner(newBoard, aiPlayer)) {
+        return { score: 10 };
+      } else if (availSpots.length === 0) {
+        return { score: 0 };
+      }
+
+      const moves = [];
+
+      for (let i = 0; i < availSpots.length; i++) {
+        const move = {};
+        move.index = availSpots[i];
+        newBoard[availSpots[i]] = player;
+
+        if (player === aiPlayer) {
+          const result = minimax(newBoard, humanPlayer);
+          move.score = result.score;
+        } else {
+          const result = minimax(newBoard, aiPlayer);
+          move.score = result.score;
+        }
+
+        newBoard[availSpots[i]] = '';
+        moves.push(move);
+      }
+
+      let bestMove;
+      if (player === aiPlayer) {
+        let bestScore = -10000;
+        for (let i = 0; i < moves.length; i++) {
+          if (moves[i].score > bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      } else {
+        let bestScore = 10000;
+        for (let i = 0; i < moves.length; i++) {
+          if (moves[i].score < bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      }
+
+      return moves[bestMove];
+    }
+
+    // Reset Papan
+    function resetBoard() {
+      boardState = ['', '', '', '', '', '', '', '', ''];
+      isGameActive = true;
+      currentPlayer = humanPlayer;
+      statusText.textContent = "Giliran Kamu (X)";
+      
+      cells.forEach(cell => {
+        cell.textContent = '';
+        cell.className = 'cell';
+      });
+    }
+
+    function handleLevelChange(e) {
+      level = e.target.value;
+      resetBoard();
+    }
+
+    function resetAllScore() {
+      scores = { player: 0, draw: 0, ai: 0 };
+      updateScoreboard();
+      resetBoard();
+    }
+  </script>
+</body>
+</html>

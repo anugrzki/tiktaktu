@@ -21,64 +21,143 @@
       justify-content: center;
       min-height: 100vh;
       padding: 20px;
+      position: relative;
+    }
+
+    /* ------------------------------------
+       1. KOTAK LOGO KIRI ATAS (5 LOGO)
+    ------------------------------------ */
+    .logo-corner {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+
+    .logo-box {
+      width: 45px;
+      height: 45px;
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Styling untuk gambar logo */
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .brand-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+      margin-left: 4px;
     }
 
     h1 {
-      margin-bottom: 10px;
       font-size: 2.2rem;
       color: #38bdf8;
-    }
-
-    .control-panel {
-      display: flex;
-      gap: 15px;
-      align-items: center;
+      letter-spacing: 1px;
       margin-bottom: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
+      margin-top: 10px;
     }
 
-    label {
+    /* ------------------------------------
+       2. 5 KOTAK DI TENGAH (PANEL KONTROL & SKOR)
+    ------------------------------------ */
+    .five-boxes-container {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      max-width: 680px;
+      width: 100%;
+    }
+
+    .center-box {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 10px 14px;
+      text-align: center;
+      flex: 1 1 110px;
+      min-width: 110px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 75px;
+    }
+
+    .center-box span {
+      display: block;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      text-transform: uppercase;
       font-weight: 600;
     }
 
-    select {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background-color: #1e293b;
-      color: #f8fafc;
-      font-size: 1rem;
-      cursor: pointer;
-      outline: none;
-    }
-
-    /* Papan Skor */
-    .scoreboard {
-      display: flex;
-      gap: 20px;
-      background-color: #1e293b;
-      padding: 12px 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      margin-bottom: 20px;
-    }
-
-    .score-item {
-      text-align: center;
-    }
-
-    .score-item span {
-      display: block;
-      font-size: 0.85rem;
-      color: #94a3b8;
-    }
-
-    .score-item strong {
-      font-size: 1.5rem;
+    .center-box strong {
+      font-size: 1.4rem;
       color: #38bdf8;
     }
 
+    /* Input Select di Dalam Kotak 1 */
+    .center-box select {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-size: 0.85rem;
+      cursor: pointer;
+      outline: none;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Tombol di Dalam Kotak 5 */
+    .btn-box-action {
+      background-color: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-box-action:hover {
+      opacity: 0.9;
+    }
+
+    .btn-box-action:active {
+      transform: scale(0.96);
+    }
+
+    /* Status Permainan */
     .status {
       font-size: 1.2rem;
       margin-bottom: 15px;
@@ -117,81 +196,121 @@
     }
 
     .cell.x {
-      color: #38bdf8; /* Biru untuk Pemain X */
+      color: #38bdf8;
     }
 
     .cell.o {
-      color: #f43f5e; /* Merah untuk Bot O */
+      color: #f43f5e;
     }
 
     .cell.winning {
-      background-color: #059669; /* Hijau saat menang */
+      background-color: #059669;
       color: #ffffff;
     }
 
-    /* Tombol Reset */
+    /* Tombol Reset Semua Skor */
     .actions {
-      margin-top: 25px;
-      display: flex;
-      gap: 10px;
+      margin-top: 20px;
     }
 
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
+    .btn-clear-score {
+      padding: 8px 16px;
+      font-size: 0.9rem;
       font-weight: 600;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    .btn-reset {
-      background-color: #38bdf8;
-      color: #0f172a;
-    }
-
-    .btn-clear-score {
       background-color: #475569;
       color: #f8fafc;
+      transition: opacity 0.2s;
     }
 
-    button:hover {
+    .btn-clear-score:hover {
       opacity: 0.9;
+    }
+
+    /* Penyesuaian Responsif Layar HP */
+    @media (max-width: 600px) {
+      .logo-corner {
+        position: static;
+        margin-bottom: 15px;
+        justify-content: center;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .five-boxes-container {
+        gap: 8px;
+      }
+      .center-box {
+        flex: 1 1 45%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>Game XOX</h1>
-
-  <!-- Pengaturan Level -->
-  <div class="control-panel">
-    <label for="levelSelect">Pilih Level:</label>
-    <select id="levelSelect">
-      <option value="easy">Level 1: Mudah (Easy)</option>
-      <option value="medium">Level 2: Sedang (Medium)</option>
-      <option value="hard">Level 3: Sulit (Unbeatable)</option>
-    </select>
+  <!-- KOTAK LOGO KIRI ATAS (5 LOGO) -->
+  <div class="logo-corner">
+    <!-- Logo 1 -->
+    <div class="logo-box">
+      <img src="l1.jpeg" alt="Logo Game 1">
+    </div>
+    <!-- Logo 2 -->
+    <div class="logo-box">
+      <img src="l2.jpeg" alt="Logo Game 2">
+    </div>
+    <!-- Logo 3 -->
+    <div class="logo-box">
+      <img src="l3.jpeg" alt="Logo Game 3">
+    </div>
+    <!-- Logo 4 -->
+    <div class="logo-box">
+      <img src="l4.jpeg" alt="Logo Game 4">
+    </div>
+    <!-- Logo 5 -->
+    <div class="logo-box">
+      <img src="l5.jpeg" alt="Logo Game 5">
+    </div>
+    <span class="brand-name">XOX Game</span>
   </div>
 
-  <!-- Papan Skor -->
-  <div class="scoreboard">
-    <div class="score-item">
+  <h1>Game XOX</h1>
+
+  <!-- 5 KOTAK BERADA DI TENGAH -->
+  <div class="five-boxes-container">
+    <!-- Kotak 1: Pilih Level -->
+    <div class="center-box">
+      <span>Level</span>
+      <select id="levelSelect">
+        <option value="easy">Mudah</option>
+        <option value="medium">Sedang</option>
+        <option value="hard">Sulit</option>
+      </select>
+    </div>
+
+    <!-- Kotak 2: Skor Kamu -->
+    <div class="center-box">
       <span>Kamu (X)</span>
       <strong id="playerScore">0</strong>
     </div>
-    <div class="score-item">
+
+    <!-- Kotak 3: Skor Seri -->
+    <div class="center-box">
       <span>Seri</span>
       <strong id="drawScore">0</strong>
     </div>
-    <div class="score-item">
+
+    <!-- Kotak 4: Skor Bot -->
+    <div class="center-box">
       <span>Bot (O)</span>
       <strong id="aiScore">0</strong>
+    </div>
+
+    <!-- Kotak 5: Tombol Reset Ronde -->
+    <div class="center-box">
+      <span>Ronde</span>
+      <button class="btn-box-action" id="resetBtn">Baru</button>
     </div>
   </div>
 
@@ -211,10 +330,9 @@
     <div class="cell" data-index="8"></div>
   </div>
 
-  <!-- Aksi -->
+  <!-- Reset Semua Skor -->
   <div class="actions">
-    <button class="btn-reset" id="resetBtn">Ronde Baru</button>
-    <button class="btn-clear-score" id="clearScoreBtn">Reset Skor</button>
+    <button class="btn-clear-score" id="clearScoreBtn">Reset Semua Skor</button>
   </div>
 
   <script>
@@ -235,7 +353,7 @@
     const winningConditions = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8], // Baris
       [0, 3, 6], [1, 4, 7], [2, 5, 8], // Kolom
-      [0, 4, 8], [2, 4, 6]             // Diagonal
+      [0, 4, 8], [2, 4, 6]              // Diagonal
     ];
 
     // Elemen DOM
@@ -254,7 +372,6 @@
     resetBtn.addEventListener('click', resetBoard);
     clearScoreBtn.addEventListener('click', resetAllScore);
 
-    // fungsi klik kotak oleh pemain
     function handleCellClick(e) {
       const index = e.target.getAttribute('data-index');
 
@@ -343,29 +460,24 @@
       const emptyIndices = getEmptyIndices(boardState);
 
       if (level === 'easy') {
-        // Acak total
         return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
       } 
       
       if (level === 'medium') {
-        // 1. Cek apakah Bot bisa menang
         for (let idx of emptyIndices) {
           let tempBoard = [...boardState];
           tempBoard[idx] = aiPlayer;
           if (isWinner(tempBoard, aiPlayer)) return idx;
         }
-        // 2. Cek apakah harus menghalangi Pemain
         for (let idx of emptyIndices) {
           let tempBoard = [...boardState];
           tempBoard[idx] = humanPlayer;
           if (isWinner(tempBoard, humanPlayer)) return idx;
         }
-        // 3. Jika tidak, ambil acak
         return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
       } 
       
       if (level === 'hard') {
-        // Gunakan Minimax Algorithm (Tak Terkalahkan)
         return minimax(boardState, aiPlayer).index;
       }
     }
@@ -380,7 +492,6 @@
       });
     }
 
-    // Algoritma Minimax untuk Level Hard
     function minimax(newBoard, player) {
       const availSpots = getEmptyIndices(newBoard);
 
@@ -433,7 +544,6 @@
       return moves[bestMove];
     }
 
-    // Reset Papan
     function resetBoard() {
       boardState = ['', '', '', '', '', '', '', '', ''];
       isGameActive = true;

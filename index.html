@@ -169,7 +169,7 @@
         <div class="logo-box"><img src="l3.jpeg" alt="Logo 3"></div>
         <div class="logo-box"><img src="l4.jpeg" alt="Logo 4"></div>
         <div class="logo-box"><img src="l5.jpeg" alt="Logo 5"></div>
-        <span class="brand-name"></span>
+        <span class="brand-name">XOX Game</span>
     </div>
 
     <h1>XOX Master</h1>
@@ -309,9 +309,11 @@
                 document.getElementById('status').innerText = `Pemain ${currentPlayer} Menang!`;
                 if (currentPlayer === 'X') scoreX++; else scoreO++;
                 updateScoreboard();
-                winPattern.forEach(idx => {
-                    document.querySelector(`[data-index='${idx}']`).classList.add('winning');
-                });
+                if (winPattern) {
+                    winPattern.forEach(idx => {
+                        document.querySelector(`[data-index='${idx}']`).classList.add('winning');
+                    });
+                }
             }
         }
 
@@ -320,9 +322,17 @@
             const mode = document.getElementById('game-mode').value;
             let move;
 
-            if (mode === 'easy') move = getRandomMove();
-            else if (mode === 'medium') move = Math.random() < 0.5 ? getSmartMove() : getRandomMove();
-            else move = getSmartMove();
+            if (mode === 'easy') {
+                move = getRandomMove();
+            } else if (mode === 'medium') {
+                move = Math.random() < 0.5 ? getHeuristicMove() : getRandomMove();
+            } else if (mode === 'hard') {
+                if (size === 3) {
+                    move = getBestMoveMinimax();
+                } else {
+                    move = getHeuristicMove();
+                }
+            }
 
             if (move !== null && move !== undefined) makeMove(move, 'O');
         }
@@ -332,22 +342,163 @@
             return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
         }
 
-        function getSmartMove() {
+        /* ---------------- LOGIKA HEURISTIK AI UNTUK PAPAN BESAR ---------------- */
+        function getHeuristicMove() {
+            // 1. Cek apakah AI bisa langsung MENANG
+            let winMove = findBlockingOrWinningMove('O', winCondition - 1);
+            if (winMove !== null) return winMove;
+
+            // 2. Blokir jika Pemain X akan MENANG (4 berurutan menuju 5)
+            let blockWinMove = findBlockingOrWinningMove('X', winCondition - 1);
+            if (blockWinMove !== null) return blockWinMove;
+
+            // 3. Blokir ancaman bertahap (termasuk 3 berurutan & 2 berurutan)
+            for (let targetCount = winCondition - 2; targetCount >= 2; targetCount--) {
+                let blockThreat = findBlockingOrWinningMove('X', targetCount);
+                if (blockThreat !== null) return blockThreat;
+                
+                let attackMove = findBlockingOrWinningMove('O', targetCount);
+                if (attackMove !== null) return attackMove;
+            }
+
+            // 4. Pilih kotak kosong terdekat dari simbol yang ada
+            return getNeighborMove();
+        }
+
+        function findBlockingOrWinningMove(player, countNeeded) {
+            const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+            for (let i = 0; i < boardState.length; i++) {
+                if (boardState[i] !== '') continue;
+
+                const row = Math.floor(i / size);
+                const col = i % size;
+
+                for (let [dr, dc] of directions) {
+                    let consecutive = 0;
+
+                    // Arah maju
+                    let r = row + dr;
+                    let c = col + dc;
+                    while (r >= 0 && r < size && c >= 0 && c < size && boardState[r * size + c] === player) {
+                        consecutive++;
+                        r += dr;
+                        c += dc;
+                    }
+
+                    // Arah mundur
+                    r = row - dr;
+                    c = col - dc;
+                    while (r >= 0 && r < size && c >= 0 && c < size && boardState[r * size + c] === player) {
+                        consecutive++;
+                        r -= dr;
+                        c -= dc;
+                    }
+
+                    if (consecutive >= countNeeded) {
+                        return i;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function getNeighborMove() {
+            let candidates = [];
+            for (let i = 0; i < boardState.length; i++) {
+                if (boardState[i] !== '') {
+                    const row = Math.floor(i / size);
+                    const col = i % size;
+
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            let r = row + dr;
+                            let c = col + dc;
+                            if (r >= 0 && r < size && c >= 0 && c < size) {
+                                let idx = r * size + c;
+                                if (boardState[idx] === '' && !candidates.includes(idx)) {
+                                    candidates.push(idx);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (candidates.length > 0) {
+                return candidates[Math.floor(Math.random() * candidates.length)];
+            }
+            return getRandomMove();
+        }
+
+        /* ---------------- ALGORITMA MINIMAX UNTUK 3x3 ---------------- */
+        function getBestMoveMinimax() {
+            let bestScore = -Infinity;
+            let bestMove = null;
+
             for (let i = 0; i < boardState.length; i++) {
                 if (boardState[i] === '') {
                     boardState[i] = 'O';
-                    if (checkWin(i, 'O')) { boardState[i] = ''; return i; }
+                    let score = minimax(boardState, 0, false);
                     boardState[i] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
                 }
             }
-            for (let i = 0; i < boardState.length; i++) {
-                if (boardState[i] === '') {
-                    boardState[i] = 'X';
-                    if (checkWin(i, 'X')) { boardState[i] = ''; return i; }
-                    boardState[i] = '';
+            return bestMove;
+        }
+
+        function minimax(board, depth, isMaximizing) {
+            let result = evaluateBoard();
+            if (result !== null) {
+                if (result === 'O') return 10 - depth;
+                if (result === 'X') return depth - 10;
+                if (result === 'tie') return 0;
+            }
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function evaluateBoard() {
+            const winLines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            for (let line of winLines) {
+                const [a, b, c] = line;
+                if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+                    return boardState[a];
                 }
             }
-            return getRandomMove();
+
+            if (boardState.every(cell => cell !== '')) return 'tie';
+            return null;
         }
 
         function updateScoreboard() {

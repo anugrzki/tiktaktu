@@ -35,7 +35,6 @@
             text-shadow: 0 0 10px rgba(56, 189, 248, 0.2); 
         }
 
-        /* Container Baris Logo Sejajar */
         .logo-row {
             display: flex;
             align-items: center;
@@ -162,7 +161,6 @@
 </head>
 <body>
 
-    <!-- Baris Foto / Logo Sejajar -->
     <div class="logo-row">
         <div class="logo-box"><img src="l1.jpeg" alt="Logo 1"></div>
         <div class="logo-box"><img src="l2.jpeg" alt="Logo 2"></div>
@@ -216,8 +214,11 @@
         let isGameActive = true;
         let scoreX = 0;
         let scoreO = 0;
+        let autoResetTimeout = null; // Menyimpan ID timer untuk reset otomatis
 
         function initGame() {
+            if (autoResetTimeout) clearTimeout(autoResetTimeout);
+
             size = parseInt(document.getElementById('grid-size').value);
             winCondition = size === 3 ? 3 : 5;
             boardState = Array(size * size).fill('');
@@ -303,10 +304,11 @@
 
         function endGame(draw, winPattern = null) {
             isGameActive = false;
+            
             if (draw) {
-                document.getElementById('status').innerText = 'Permainan Seri!';
+                document.getElementById('status').innerText = 'Permainan Seri! Mengulang ronde...';
             } else {
-                document.getElementById('status').innerText = `Pemain ${currentPlayer} Menang!`;
+                document.getElementById('status').innerText = `Pemain ${currentPlayer} Menang! Mengulang ronde...`;
                 if (currentPlayer === 'X') scoreX++; else scoreO++;
                 updateScoreboard();
                 if (winPattern) {
@@ -315,6 +317,11 @@
                     });
                 }
             }
+
+            // Ganti ronde otomatis setelah 1.5 detik
+            autoResetTimeout = setTimeout(() => {
+                initGame();
+            }, 1500);
         }
 
         function aiMove() {
@@ -342,17 +349,13 @@
             return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
         }
 
-        /* ---------------- LOGIKA HEURISTIK AI UNTUK PAPAN BESAR ---------------- */
         function getHeuristicMove() {
-            // 1. Cek apakah AI bisa langsung MENANG
             let winMove = findBlockingOrWinningMove('O', winCondition - 1);
             if (winMove !== null) return winMove;
 
-            // 2. Blokir jika Pemain X akan MENANG (4 berurutan menuju 5)
             let blockWinMove = findBlockingOrWinningMove('X', winCondition - 1);
             if (blockWinMove !== null) return blockWinMove;
 
-            // 3. Blokir ancaman bertahap (termasuk 3 berurutan & 2 berurutan)
             for (let targetCount = winCondition - 2; targetCount >= 2; targetCount--) {
                 let blockThreat = findBlockingOrWinningMove('X', targetCount);
                 if (blockThreat !== null) return blockThreat;
@@ -361,7 +364,6 @@
                 if (attackMove !== null) return attackMove;
             }
 
-            // 4. Pilih kotak kosong terdekat dari simbol yang ada
             return getNeighborMove();
         }
 
@@ -377,7 +379,6 @@
                 for (let [dr, dc] of directions) {
                     let consecutive = 0;
 
-                    // Arah maju
                     let r = row + dr;
                     let c = col + dc;
                     while (r >= 0 && r < size && c >= 0 && c < size && boardState[r * size + c] === player) {
@@ -386,7 +387,6 @@
                         c += dc;
                     }
 
-                    // Arah mundur
                     r = row - dr;
                     c = col - dc;
                     while (r >= 0 && r < size && c >= 0 && c < size && boardState[r * size + c] === player) {
@@ -431,7 +431,6 @@
             return getRandomMove();
         }
 
-        /* ---------------- ALGORITMA MINIMAX UNTUK 3x3 ---------------- */
         function getBestMoveMinimax() {
             let bestScore = -Infinity;
             let bestMove = null;

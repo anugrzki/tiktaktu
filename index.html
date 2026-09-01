@@ -26,29 +26,7 @@
             padding: 20px;
         }
 
-        .header-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        /* Styling logo custom */
-        .custom-logo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 10px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            transition: transform 0.3s ease;
-        }
-
-        .custom-logo:hover {
-            transform: scale(1.08);
-        }
-
-        h1 { margin: 0 0 10px 0; font-size: 2.2rem; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        h1 { margin-bottom: 10px; font-size: 2.5rem; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
 
         .controls {
             background: var(--card-bg);
@@ -135,23 +113,15 @@
 </head>
 <body>
 
-<div>
-    <div class="logo-corner">
-    <div class="logo-box"><img src="l1.jpeg" alt="Logo Game 1"></div>
-    <div class="logo-box"><img src="l2.jpeg" alt="Logo Game 2"></div>
-    <div class="logo-box"><img src="l3.jpeg" alt="Logo Game 3"></div>
-    <div class="logo-box"><img src="l4.jpeg" alt="Logo Game 4"></div>
-    <div class="logo-box"><img src="l5.jpeg" alt="Logo Game 5"></div>
-    <span class="brand-name">XOX Game</span>
-  </div>
+    <h1>XOX Master</h1>
+
     <div class="controls">
         <label>Ukuran: 
             <select id="grid-size" onchange="resetGame()">
                 <option value="3">3 x 3 (Menang 3)</option>
-                <option value="5" selected>5 x 5 (Menang 3)</option>
-                <option value="9">9 x 9 (Menang 3)</option>
-                <option value="16">16 x 16 (Menang 3)</option>
-                <option value="32">32 x 32 (Menang 3)</option>
+                <option value="9">9 x 9 (Menang 5)</option>
+                <option value="16">16 x 16 (Menang 5)</option>
+                <option value="32">32 x 32 (Menang 5)</option>
             </select>
         </label>
 
@@ -180,8 +150,8 @@
     <div id="status" class="status">Giliran Pemain X</div>
 
     <script>
-        let size = 5;
-        let winCondition = 4;
+        let size = 3;
+        let winCondition = 3;
         let boardState = [];
         let currentPlayer = 'X';
         let isGameActive = true;
@@ -190,7 +160,7 @@
 
         function initGame() {
             size = parseInt(document.getElementById('grid-size').value);
-            winCondition = size === 3 ? 3 : (size === 5 ? 4 : 5);
+            winCondition = size === 3 ? 3 : 5;
             boardState = Array(size * size).fill('');
             currentPlayer = 'X';
             isGameActive = true;
@@ -215,7 +185,6 @@
 
         function getCellSize() {
             if (size === 3) return 100;
-            if (size === 5) return 70;
             if (size === 9) return 45;
             if (size === 16) return 30;
             return 22; // 32x32
@@ -305,6 +274,7 @@
         }
 
         function getSmartMove() {
+            // Cek apakah AI bisa menang di langkah ini
             for (let i = 0; i < boardState.length; i++) {
                 if (boardState[i] === '') {
                     boardState[i] = 'O';
@@ -312,6 +282,7 @@
                     boardState[i] = '';
                 }
             }
+            // Cek apakah perlu menahan pemain X
             for (let i = 0; i < boardState.length; i++) {
                 if (boardState[i] === '') {
                     boardState[i] = 'X';
@@ -340,52 +311,3 @@
     </script>
 </body>
 </html>
-logo-corner {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      z-index: 100;
-      flex-wrap: wrap;
-    }
-
-    .logo-box {
-      width: 45px;
-      height: 45px;
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-      padding: 2px;
-      flex-shrink: 0;
-    }
-
-    /* Styling untuk gambar logo */
-    .logo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
-    .brand-name {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #38bdf8;
-      letter-spacing: 0.5px;
-      margin-left: 4px;
-    }
-
-    h1 {
-      font-size: 2.2rem;
-      color: #38bdf8;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-      margin-top: 10px;
-    }

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XOX Master Ultimate</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-x: #ef4444;
+            --accent-o: #3b82f6;
+            --text-color: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 { margin-bottom: 10px; font-size: 2.5rem; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+
+        select, button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            background: #334155;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        select:hover, button:hover { background: #475569; transform: translateY(-2px); }
+        button.btn-reset { background: #e11d48; }
+        button.btn-reset:hover { background: #be123c; }
+
+        .scoreboard {
+            display: flex;
+            gap: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            background: var(--card-bg);
+            padding: 10px 30px;
+            border-radius: 30px;
+        }
+
+        .score-x { color: var(--accent-x); }
+        .score-o { color: var(--accent-o); }
+
+        .board-container {
+            max-width: 90vw;
+            max-height: 60vh;
+            overflow: auto;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            background: #020617;
+            padding: 5px;
+        }
+
+        .board {
+            display: grid;
+            gap: 4px;
+            margin: 0 auto;
+        }
+
+        .cell {
+            background: var(--card-bg);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .cell:hover { background: #334155; }
+        .cell.x { color: var(--accent-x); }
+        .cell.o { color: var(--accent-o); }
+        .cell.winning { background: #22c55e !important; color: white; }
+
+        .status {
+            font-size: 1.2rem;
+            margin-top: 15px;
+            font-weight: 500;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>XOX Master</h1>
+
+    <div class="controls">
+        <label>Ukuran: 
+            <select id="grid-size" onchange="resetGame()">
+                <option value="3">3 x 3 (Menang 3)</option>
+                <option value="9">9 x 9 (Menang 5)</option>
+                <option value="16">16 x 16 (Menang 5)</option>
+                <option value="32">32 x 32 (Menang 5)</option>
+            </select>
+        </label>
+
+        <label>Mode: 
+            <select id="game-mode" onchange="resetGame()">
+                <option value="pvp">2 Pemain (Lokal)</option>
+                <option value="easy">VS AI (Mudah)</option>
+                <option value="medium" selected>VS AI (Sedang)</option>
+                <option value="hard">VS AI (Sulit)</option>
+            </select>
+        </label>
+
+        <button class="btn-reset" onclick="resetGame()">Ronde Baru</button>
+        <button onclick="resetScore()">Reset Skor</button>
+    </div>
+
+    <div class="scoreboard">
+        <span class="score-x">Pemain X: <span id="score-x">0</span></span>
+        <span class="score-o">Pemain O: <span id="score-o">0</span></span>
+    </div>
+
+    <div class="board-container">
+        <div id="board" class="board"></div>
+    </div>
+
+    <div id="status" class="status">Giliran Pemain X</div>
+
+    <script>
+        let size = 3;
+        let winCondition = 3;
+        let boardState = [];
+        let currentPlayer = 'X';
+        let isGameActive = true;
+        let scoreX = 0;
+        let scoreO = 0;
+
+        function initGame() {
+            size = parseInt(document.getElementById('grid-size').value);
+            winCondition = size === 3 ? 3 : 5;
+            boardState = Array(size * size).fill('');
+            currentPlayer = 'X';
+            isGameActive = true;
+            
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            boardEl.style.gridTemplateColumns = `repeat(${size}, ${getCellSize()}px)`;
+
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.style.width = `${getCellSize()}px`;
+                cell.style.height = `${getCellSize()}px`;
+                cell.style.fontSize = `${getCellSize() * 0.6}px`;
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleCellClick);
+                boardEl.appendChild(cell);
+            }
+
+            document.getElementById('status').innerText = `Giliran Pemain ${currentPlayer}`;
+        }
+
+        function getCellSize() {
+            if (size === 3) return 100;
+            if (size === 9) return 45;
+            if (size === 16) return 30;
+            return 22; // 32x32
+        }
+
+        function handleCellClick(e) {
+            const index = e.target.dataset.index;
+            if (boardState[index] !== '' || !isGameActive) return;
+
+            makeMove(index, currentPlayer);
+
+            if (isGameActive && document.getElementById('game-mode').value !== 'pvp' && currentPlayer === 'O') {
+                setTimeout(aiMove, 200);
+            }
+        }
+
+        function makeMove(index, player) {
+            boardState[index] = player;
+            const cell = document.querySelector(`[data-index='${index}']`);
+            cell.innerText = player;
+            cell.classList.add(player.toLowerCase());
+
+            const winPattern = checkWin(index, player);
+            if (winPattern) {
+                endGame(false, winPattern);
+            } else if (boardState.every(cell => cell !== '')) {
+                endGame(true);
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                document.getElementById('status').innerText = `Giliran Pemain ${currentPlayer}`;
+            }
+        }
+
+        function checkWin(lastIndex, player) {
+            const row = Math.floor(lastIndex / size);
+            const col = lastIndex % size;
+            const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+            for (let [dr, dc] of directions) {
+                let count = 1;
+                let winningCells = [parseInt(lastIndex)];
+
+                for (let sign of [-1, 1]) {
+                    let r = row + dr * sign;
+                    let c = col + dc * sign;
+                    while (r >= 0 && r < size && c >= 0 && c < size && boardState[r * size + c] === player) {
+                        count++;
+                        winningCells.push(r * size + c);
+                        if (count >= winCondition) return winningCells;
+                        r += dr * sign;
+                        c += dc * sign;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function endGame(draw, winPattern = null) {
+            isGameActive = false;
+            if (draw) {
+                document.getElementById('status').innerText = 'Permainan Seri!';
+            } else {
+                document.getElementById('status').innerText = `Pemain ${currentPlayer} Menang!`;
+                if (currentPlayer === 'X') scoreX++; else scoreO++;
+                updateScoreboard();
+                winPattern.forEach(idx => {
+                    document.querySelector(`[data-index='${idx}']`).classList.add('winning');
+                });
+            }
+        }
+
+        function aiMove() {
+            if (!isGameActive) return;
+            const mode = document.getElementById('game-mode').value;
+            let move;
+
+            if (mode === 'easy') move = getRandomMove();
+            else if (mode === 'medium') move = Math.random() < 0.5 ? getSmartMove() : getRandomMove();
+            else move = getSmartMove();
+
+            if (move !== null && move !== undefined) makeMove(move, 'O');
+        }
+
+        function getRandomMove() {
+            const emptyIndices = boardState.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
+            return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+        }
+
+        function getSmartMove() {
+            // Cek apakah AI bisa menang di langkah ini
+            for (let i = 0; i < boardState.length; i++) {
+                if (boardState[i] === '') {
+                    boardState[i] = 'O';
+                    if (checkWin(i, 'O')) { boardState[i] = ''; return i; }
+                    boardState[i] = '';
+                }
+            }
+            // Cek apakah perlu menahan pemain X
+            for (let i = 0; i < boardState.length; i++) {
+                if (boardState[i] === '') {
+                    boardState[i] = 'X';
+                    if (checkWin(i, 'X')) { boardState[i] = ''; return i; }
+                    boardState[i] = '';
+                }
+            }
+            return getRandomMove();
+        }
+
+        function updateScoreboard() {
+            document.getElementById('score-x').innerText = scoreX;
+            document.getElementById('score-o').innerText = scoreO;
+        }
+
+        function resetGame() { initGame(); }
+
+        function resetScore() {
+            scoreX = 0;
+            scoreO = 0;
+            updateScoreboard();
+            resetGame();
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
